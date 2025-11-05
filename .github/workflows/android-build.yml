@@ -1,4 +1,4 @@
-name: Build with Fixed Gradle Files
+name: Build BPDB Android App
 
 on:
   push:
@@ -11,68 +11,40 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Fix Gradle files
+    - name: Fix project structure
       run: |
         # Fix settings.gradle filename
         if [ -f "setting.gradle" ]; then
           mv setting.gradle settings.gradle
+          echo "✓ Fixed settings.gradle filename"
         fi
         
-        # Create proper root build.gradle
-        cat > build.gradle << 'EOF'
-        // Top-level build file where you can add configuration options common to all sub-projects/modules.
-        buildscript {
-            repositories {
-                google()
-                mavenCentral()
-            }
-            dependencies {
-                classpath "com.android.tools.build:gradle:8.1.0"
-                classpath "com.chaquo.python:gradle:14.0.2"
-            }
-        }
+        # Fix directory structure for Android standards
+        mkdir -p app/src/main/java/customerinfo/app
+        mkdir -p app/src/main/python
         
-        allprojects {
-            repositories {
-                google()
-                mavenCentral()
-            }
-        }
-        
-        task clean(type: Delete) {
-            delete rootProject.buildDir
-        }
-        EOF
-        
-        # Create proper settings.gradle
-        cat > settings.gradle << 'EOF'
-        pluginManagement {
-            repositories {
-                google()
-                mavenCentral()
-                gradlePluginPortal()
-            }
-        }
-        dependencyResolutionManagement {
-            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-            repositories {
-                google()
-                mavenCentral()
-            }
-        }
-        
-        rootProject.name = "Customer-Info"
-        include ':app'
-        EOF
-        
-        # Fix directory structure
-        mkdir -p app/src/main
+        # Copy Java files to correct location
         if [ -d "app/java" ]; then
-          mv app/java app/src/main/java
+          find app/java -name "*.java" -exec cp {} app/src/main/java/customerinfo/app/ \;
+          echo "✓ Copied Java files"
         fi
+        
+        # Copy Python files to correct location  
         if [ -d "app/python" ]; then
-          mv app/python app/src/main/python
+          cp -r app/python/* app/src/main/python/ || true
+          echo "✓ Copied Python files"
         fi
+        
+        # Copy AndroidManifest to correct location
+        if [ -f "app/AndroidManifest.xml" ] && [ ! -f "app/src/main/AndroidManifest.xml" ]; then
+          mkdir -p app/src/main
+          cp app/AndroidManifest.xml app/src/main/
+          echo "✓ Fixed AndroidManifest location"
+        fi
+        
+        # Verify structure
+        echo "=== Final Structure ==="
+        find app/src -type f | head -10
         
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -85,11 +57,15 @@ jobs:
       
     - name: Build Android APK
       run: |
-        gradle clean assembleDebug --stacktrace
+        gradle clean assembleDebug --stacktrace --info
+        
+    - name: Find and list APK files
+      run: |
+        find . -name "*.apk" -type f || echo "No APK files found"
         
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: BPDB-App
-        path: "app/build/outputs/apk/**/*.apk"
+        name: BPDB-Meter-Lookup-App
+        path: "**/build/outputs/apk/**/*.apk"
         if-no-files-found: warn

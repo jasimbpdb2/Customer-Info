@@ -1,4 +1,4 @@
-name: Build BPDB Android App
+name: Build with Fixed Gradle Files
 
 on:
   push:
@@ -11,31 +11,67 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Fix project structure
+    - name: Fix Gradle files
       run: |
         # Fix settings.gradle filename
         if [ -f "setting.gradle" ]; then
           mv setting.gradle settings.gradle
-          echo "✓ Fixed settings.gradle filename"
         fi
         
-        # Fix Java source directory structure
+        # Create proper root build.gradle
+        cat > build.gradle << 'EOF'
+        // Top-level build file where you can add configuration options common to all sub-projects/modules.
+        buildscript {
+            repositories {
+                google()
+                mavenCentral()
+            }
+            dependencies {
+                classpath "com.android.tools.build:gradle:8.1.0"
+                classpath "com.chaquo.python:gradle:14.0.2"
+            }
+        }
+        
+        allprojects {
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        
+        task clean(type: Delete) {
+            delete rootProject.buildDir
+        }
+        EOF
+        
+        # Create proper settings.gradle
+        cat > settings.gradle << 'EOF'
+        pluginManagement {
+            repositories {
+                google()
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+        dependencyResolutionManagement {
+            repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+            repositories {
+                google()
+                mavenCentral()
+            }
+        }
+        
+        rootProject.name = "Customer-Info"
+        include ':app'
+        EOF
+        
+        # Fix directory structure
+        mkdir -p app/src/main
         if [ -d "app/java" ]; then
-          mkdir -p app/src/main
           mv app/java app/src/main/java
-          echo "✓ Fixed Java source directory structure"
         fi
-        
-        # Fix Python source directory structure for Chaquopy
         if [ -d "app/python" ]; then
           mv app/python app/src/main/python
-          echo "✓ Fixed Python source directory structure"
-        fi
-        
-        # Create gradle wrapper if missing but gradle directory exists
-        if [ ! -f "gradlew" ] && [ -d "gradle" ]; then
-          echo "Generating gradle wrapper..."
-          gradle wrapper || echo "Wrapper generation may fail but will try build anyway"
         fi
         
     - name: Set up JDK 17
@@ -47,25 +83,13 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
       
-    - name: Verify fixed structure
-      run: |
-        echo "=== Fixed Structure ==="
-        ls -la *.gradle*
-        echo "=== Source Directories ==="
-        find app/src -type f | head -15
-        
     - name: Build Android APK
       run: |
-        if [ -f "gradlew" ]; then
-          chmod +x gradlew
-          ./gradlew clean assembleDebug --stacktrace
-        else
-          echo "Using system gradle..."
-          gradle clean assembleDebug --stacktrace
-        fi
+        gradle clean assembleDebug --stacktrace
         
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: BPDB-App
         path: "app/build/outputs/apk/**/*.apk"
+        if-no-files-found: warn

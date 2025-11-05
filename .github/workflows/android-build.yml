@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build BPDB Android App
 
 on:
   push:
@@ -11,41 +11,49 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Check project structure
-      run: |
-        echo "=== Current structure ==="
-        ls -la
-        echo "=== Is there an 'app' directory? ==="
-        if [ -d "app" ]; then
-          echo "✓ app directory exists"
-          ls -la app/
-        else
-          echo "✗ No app directory found"
-          echo "Available directories:"
-          find . -type d -maxdepth 2 | head -20
-        fi
-        
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
+        cache: gradle
         
-    - name: Build
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: Validate project structure
       run: |
-        # Build whatever exists
-        if [ -d "app" ]; then
-          gradle assembleDebug
+        echo "=== Project Structure ==="
+        ls -la
+        echo "=== Python files ==="
+        find . -name "*.py" | head -10
+        echo "=== Android files ==="
+        find . -name "AndroidManifest.xml" -o -name "build.gradle" | head -10
+        
+    - name: Check Python syntax
+      run: |
+        # Validate Python files exist and have correct syntax
+        if find . -name "*.py" | grep -q .; then
+          echo "Python files found - checking syntax"
+          python -m py_compile $(find . -name "*.py") || echo "Some Python files have syntax issues"
         else
-          echo "No app directory - trying to build root project"
-          gradle build
+          echo "No Python files found"
         fi
         
-    - name: Upload whatever was built
+    - name: Build Android APK with Gradle Wrapper
+      run: |
+        ./gradlew clean assembleDebug --stacktrace --info
+        
+    - name: List build outputs
+      run: |
+        echo "=== Build results ==="
+        find . -name "*.apk" -type f
+        echo "=== Build directories ==="
+        find . -name "build" -type d
+        
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: Build-Outputs
-        path: |
-          **/build/**
-          **/outputs/**
-        if-no-files-found: warn
+        name: BPDB-Customer-Info-App
+        path: "**/build/outputs/apk/**/*.apk"
+        if-no-files-found: error

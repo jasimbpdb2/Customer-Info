@@ -92,13 +92,14 @@ public class MainActivity extends AppCompatActivity {
                     result = api.callAttr("fetch_postpaid_data", meterNo);
                 }
                 
-                PyObject formatted = api.callAttr("format_response", result);
-                String output = formatted.toString();
+                // Format the result using display_result function
+                PyObject display_func = api.callAttr("display_result", result, selectedType);
+                String output = display_func.toString();
                 
                 runOnUiThread(() -> showResult(output));
                 
             } catch (Exception e) {
-                runOnUiThread(() -> showResult("❌ Error: " + e.getMessage()));
+                runOnUiThread(() -> showResult("❌ Error: " + e.getMessage() + "\n\nCheck internet connection and try again."));
             }
         }).start();
     }

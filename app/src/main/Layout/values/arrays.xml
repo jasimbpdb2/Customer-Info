@@ -1,0 +1,6 @@
+<resources>
+    <string-array name="bill_types">
+        <item>Prepaid</item>
+        <item>Postpaid</item>
+    </string-array>
+</resources>

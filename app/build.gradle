@@ -1,7 +1,10 @@
 plugins {
-    id 'com.android.application'
-    id 'com.chaquo.python'
+    id 'com.android.application' version '8.2.0' apply false
+    id 'com.chaquo.python' version '14.0.2' apply false
 }
+
+apply plugin: 'com.android.application'
+apply plugin: 'com.chaquo.python'
 
 android {
     namespace 'customerinfo.app'
@@ -15,7 +18,7 @@ android {
         versionName "1.0"
         
         python {
-            buildPython "C:/Python310/python.exe"
+            buildPython "python3"
             pip {
                 install "requests"
                 install "urllib3"

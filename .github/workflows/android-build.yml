@@ -11,38 +11,31 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Download complete Gradle wrapper from official source
+    - name: Create gradle.properties with AndroidX enabled
       run: |
-        # Remove all existing wrapper files
-        rm -rf gradle/wrapper
-        rm -f gradlew
-        rm -f gradlew.bat
-        
-        # Create wrapper directory
-        mkdir -p gradle/wrapper
-        
-        # Download gradle-wrapper.jar from official source
-        wget -O gradle/wrapper/gradle-wrapper.jar \
-          https://github.com/gradle/gradle/raw/master/gradle/wrapper/gradle-wrapper.jar
-        
-        # Download gradlew from official source
-        wget -O gradlew \
-          https://raw.githubusercontent.com/gradle/gradle/master/gradlew
-        
-        # Create gradle-wrapper.properties
-        cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
-        distributionBase=GRADLE_USER_HOME
-        distributionPath=wrapper/dists
-        distributionUrl=https\://services.gradle.org/distributions/gradle-8.14.3-bin.zip
-        zipStoreBase=GRADLE_USER_HOME
-        zipStorePath=wrapper/dists
+        # Create gradle.properties file
+        cat > gradle.properties << 'EOF'
+        android.useAndroidX=true
+        android.enableJetifier=true
+        org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
         EOF
         
-        # Make gradlew executable
-        chmod +x gradlew
+        echo "=== Created gradle.properties ==="
+        cat gradle.properties
+        echo ""
+        echo "=== Current files in root ==="
+        ls -la
         
-        echo "✓ Downloaded complete Gradle wrapper"
-        ls -la gradle/wrapper/
+    - name: Verify gradle.properties location
+      run: |
+        echo "=== Checking if gradle.properties exists ==="
+        if [ -f "gradle.properties" ]; then
+          echo "✓ gradle.properties exists in root"
+          echo "Content:"
+          cat gradle.properties
+        else
+          echo "✗ gradle.properties missing"
+        fi
         
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -50,11 +43,13 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         
-    - name: Build Android APK
-      run: ./gradlew clean assembleDebug
+    - name: Build Android APK with AndroidX
+      run: |
+        ./gradlew clean assembleDebug -Pandroid.useAndroidX=true -Pandroid.enableJetifier=true
         
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: BPDB-App
         path: "app/build/outputs/apk/**/*.apk"
+        if-no-files-found: warn

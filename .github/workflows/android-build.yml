@@ -1,24 +1,71 @@
-name: Debug Project Structure
+name: Build BPDB Android App
 
-on: [push]
+on:
+  push:
+    branches: [main]
 
 jobs:
-  debug:
+  build:
     runs-on: ubuntu-latest
+    
     steps:
     - uses: actions/checkout@v4
-    - name: Complete Project Analysis
+    
+    - name: Fix project structure
       run: |
-        echo "=== FULL PROJECT STRUCTURE ==="
-        find . -type f | sort | head -50
-        echo "=== ANDROID SPECIFIC FILES ==="
-        find . -name "AndroidManifest.xml" -o -name "build.gradle" -o -name "*.py" -o -name "*.java"
-        echo "=== ROOT DIRECTORY CONTENTS ==="
-        ls -la
-        echo "=== APP DIRECTORY (if exists) ==="
-        if [ -d "app" ]; then
-          ls -la app/
-          find app/ -name "*.gradle" -o -name "AndroidManifest.xml" | head -10
-        else
-          echo "No app directory found"
+        # Fix settings.gradle filename
+        if [ -f "setting.gradle" ]; then
+          mv setting.gradle settings.gradle
+          echo "✓ Fixed settings.gradle filename"
         fi
+        
+        # Fix Java source directory structure
+        if [ -d "app/java" ]; then
+          mkdir -p app/src/main
+          mv app/java app/src/main/java
+          echo "✓ Fixed Java source directory structure"
+        fi
+        
+        # Fix Python source directory structure for Chaquopy
+        if [ -d "app/python" ]; then
+          mv app/python app/src/main/python
+          echo "✓ Fixed Python source directory structure"
+        fi
+        
+        # Create gradle wrapper if missing but gradle directory exists
+        if [ ! -f "gradlew" ] && [ -d "gradle" ]; then
+          echo "Generating gradle wrapper..."
+          gradle wrapper || echo "Wrapper generation may fail but will try build anyway"
+        fi
+        
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: Verify fixed structure
+      run: |
+        echo "=== Fixed Structure ==="
+        ls -la *.gradle*
+        echo "=== Source Directories ==="
+        find app/src -type f | head -15
+        
+    - name: Build Android APK
+      run: |
+        if [ -f "gradlew" ]; then
+          chmod +x gradlew
+          ./gradlew clean assembleDebug --stacktrace
+        else
+          echo "Using system gradle..."
+          gradle clean assembleDebug --stacktrace
+        fi
+        
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: BPDB-App
+        path: "app/build/outputs/apk/**/*.apk"

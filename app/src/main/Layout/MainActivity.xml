@@ -1,0 +1,35 @@
+$mainActivityFile = "C:\Users\ACW\Desktop\CustomerInfo_Project_Online\app\MainActivity.java"
+$simpleMainActivity = @"
+package customerinfo.app;
+
+import android.os.Bundle;
+import android.widget.*;
+import androidx.appcompat.app.AppCompatActivity;
+import com.chaquo.python.PyObject;
+import com.chaquo.python.Python;
+import com.chaquo.python.android.AndroidPlatform;
+
+public class MainActivity extends AppCompatActivity {
+    // YOUR EXISTING CODE HERE - just change the package name
+    private EditText meterInput;
+    private Button prepaidBtn, postpaidBtn, submitBtn;
+    private TextView resultView;
+    private String selectedType = "prepaid";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        
+        // Initialize Python
+        if (!Python.isStarted()) {
+            Python.start(new AndroidPlatform(this));
+        }
+        
+        // Your existing initialization code...
+    }
+    
+    // Your existing methods...
+}
+"@
+Set-Content -Path $mainActivityFile -Value $simpleMainActivity

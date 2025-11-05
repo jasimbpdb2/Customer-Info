@@ -1,4 +1,4 @@
-name: Debug Root Build.Gradle
+name: Complete Project Debug
 
 on:
   push:
@@ -10,13 +10,48 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Check the actual root build.gradle content
+    - name: Check ALL Gradle files and structure
       run: |
-        echo "=== ACTUAL ROOT build.gradle CONTENT ==="
+        echo "=== COMPLETE PROJECT ANALYSIS ==="
+        echo ""
+        echo "=== 1. Root build.gradle ==="
         cat build.gradle
         echo ""
-        echo "=== Line 11 specifically ==="
-        sed -n '11p' build.gradle
+        echo "=== 2. App build.gradle ==="
+        cat app/build.gradle
         echo ""
-        echo "=== Full file with line numbers ==="
-        cat -n build.gradle
+        echo "=== 3. Settings.gradle ==="
+        cat settings.gradle
+        echo ""
+        echo "=== 4. Directory Structure ==="
+        echo "Root:"
+        ls -la
+        echo ""
+        echo "App directory:"
+        ls -la app/
+        echo ""
+        echo "=== 5. Source Files ==="
+        find . -name "*.java" -o -name "AndroidManifest.xml" | head -20
+        echo ""
+        echo "=== 6. Gradle Wrapper ==="
+        ls -la gradle/ || echo "No gradle wrapper directory"
+        ls -la *.bat *.sh *.properties 2>/dev/null || echo "No wrapper files"
+        
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Try different build approaches
+      run: |
+        echo "=== Approach 1: Using gradle command ==="
+        gradle clean assembleDebug --stacktrace || echo "Gradle command failed"
+        
+        echo ""
+        echo "=== Approach 2: Check Gradle version ==="
+        gradle --version || echo "Gradle version check failed"
+        
+        echo ""
+        echo "=== Approach 3: Check tasks ==="
+        gradle tasks --all || echo "Tasks failed"

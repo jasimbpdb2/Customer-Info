@@ -11,7 +11,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Fix root build.gradle for Gradle 9.2.0
+    - name: Fix root build.gradle
       run: |
         cat > build.gradle << 'EOF'
         buildscript {
@@ -33,7 +33,7 @@ jobs:
       run: |
         mkdir -p app/src/main/java/customerinfo/app
         if [ -d "app/java" ]; then
-          cp -r app/java/* app/src/main/java/customerinfo.app/ || true
+          cp -r app/java/* app/src/main/java/customerinfo/app/ || true
         fi
         if [ -f "app/AndroidManifest.xml" ]; then
           mkdir -p app/src/main
@@ -48,11 +48,19 @@ jobs:
         
     - name: Build Android APK
       run: |
-        gradle clean assembleDebug --stacktrace
+        gradle clean assembleDebug --warning-mode none
+        
+    - name: Find and list APK files
+      run: |
+        echo "=== Searching for APK files ==="
+        find . -name "*.apk" -type f
+        echo "=== Build outputs ==="
+        ls -la app/build/outputs/apk/ || echo "No apk directory"
+        ls -la app/build/outputs/apk/debug/ || echo "No debug directory"
         
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: BPDB-App
-        path: "app/build/outputs/apk/**/*.apk"
+        name: BPDB-Android-App
+        path: "**/build/outputs/apk/**/*.apk"
         if-no-files-found: warn

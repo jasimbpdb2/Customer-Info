@@ -11,12 +11,38 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Create simple working gradlew
+    - name: Download complete Gradle wrapper from official source
       run: |
-        # Download a known working gradlew from official source
-        curl -o gradlew https://raw.githubusercontent.com/gradle/gradle/master/gradlew
+        # Remove all existing wrapper files
+        rm -rf gradle/wrapper
+        rm -f gradlew
+        rm -f gradlew.bat
+        
+        # Create wrapper directory
+        mkdir -p gradle/wrapper
+        
+        # Download gradle-wrapper.jar from official source
+        wget -O gradle/wrapper/gradle-wrapper.jar \
+          https://github.com/gradle/gradle/raw/master/gradle/wrapper/gradle-wrapper.jar
+        
+        # Download gradlew from official source
+        wget -O gradlew \
+          https://raw.githubusercontent.com/gradle/gradle/master/gradlew
+        
+        # Create gradle-wrapper.properties
+        cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
+        distributionBase=GRADLE_USER_HOME
+        distributionPath=wrapper/dists
+        distributionUrl=https\://services.gradle.org/distributions/gradle-8.14.3-bin.zip
+        zipStoreBase=GRADLE_USER_HOME
+        zipStorePath=wrapper/dists
+        EOF
+        
+        # Make gradlew executable
         chmod +x gradlew
-        echo "✓ Downloaded working gradlew"
+        
+        echo "✓ Downloaded complete Gradle wrapper"
+        ls -la gradle/wrapper/
         
     - name: Set up JDK 17
       uses: actions/setup-java@v4

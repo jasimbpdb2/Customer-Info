@@ -1,4 +1,3 @@
-$appGradleContent = @"
 plugins {
     id 'com.android.application'
     id 'com.chaquo.python'
@@ -22,14 +21,24 @@ android {
                 install "urllib3"
             }
         }
+        
+        ndk {
+            abiFilters "arm64-v8a", "x86_64"
+        }
     }
     
     sourceSets {
         main {
-            java.srcDirs = ['']  # Look for Java files in app/ folder
-            res.srcDirs = ['src/main/res']
+            java.srcDirs = ['java']
+            res.srcDirs = ['res']
             python.srcDirs = ['python']
+            manifest.srcFile 'AndroidManifest.xml'
         }
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -37,5 +46,3 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
 }
-"@
-Set-Content -Path "C:\Users\ACW\Desktop\CustomerInfo_Project_Online\app\build.gradle" -Value $appGradleContent

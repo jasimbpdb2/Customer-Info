@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BPDB Meter Lookup"
+rootProject.name = "Customer-Info"
 include ':app'

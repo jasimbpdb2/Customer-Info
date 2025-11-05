@@ -1,35 +1,111 @@
-$mainActivityFile = "C:\Users\ACW\Desktop\CustomerInfo_Project_Online\app\MainActivity.java"
-$simpleMainActivity = @"
-package customerinfo.app;
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#f8f9fa">
 
-import android.os.Bundle;
-import android.widget.*;
-import androidx.appcompat.app.AppCompatActivity;
-import com.chaquo.python.PyObject;
-import com.chaquo.python.Python;
-import com.chaquo.python.android.AndroidPlatform;
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🏠 BPDB Meter Lookup"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="20dp"
+        android:textColor="#2c3e50" />
 
-public class MainActivity extends AppCompatActivity {
-    // YOUR EXISTING CODE HERE - just change the package name
-    private EditText meterInput;
-    private Button prepaidBtn, postpaidBtn, submitBtn;
-    private TextView resultView;
-    private String selectedType = "prepaid";
+    <!-- Meter Input -->
+    <EditText
+        android:id="@+id/meterInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter meter number"
+        android:inputType="number"
+        android:maxLines="1"
+        android:layout_marginBottom="16dp" />
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        
-        // Initialize Python
-        if (!Python.isStarted()) {
-            Python.start(new AndroidPlatform(this));
-        }
-        
-        // Your existing initialization code...
-    }
-    
-    // Your existing methods...
-}
-"@
-Set-Content -Path $mainActivityFile -Value $simpleMainActivity
+    <!-- Button Row 1: Prepaid/Postpaid -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8px">
+
+        <Button
+            android:id="@+id/prepaidBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🔋 Prepaid"
+            android:layout_marginEnd="4dp"
+            android:textColor="#ffffff" />
+
+        <Button
+            android:id="@+id/postpaidBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="💡 Postpaid"
+            android:layout_marginStart="4dp"
+            android:textColor="#ffffff" />
+
+    </LinearLayout>
+
+    <!-- Button Row 2: Submit/Exit -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="20dp">
+
+        <Button
+            android:id="@+id/submitBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🚀 Submit"
+            android:layout_marginEnd="4dp"
+            android:background="#27ae60"
+            android:textColor="#ffffff" />
+
+        <Button
+            android:id="@+id/exitBtn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="❌ Exit"
+            android:layout_marginStart="4dp"
+            android:background="#e74c3c"
+            android:textColor="#ffffff" />
+
+    </LinearLayout>
+
+    <!-- Results -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📋 Results:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#ffffff"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/resultView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="👆 Select bill type, enter meter number and tap Submit"
+            android:textSize="14sp"
+            android:textColor="#2c3e50" />
+
+    </ScrollView>
+
+</LinearLayout>

@@ -1,48 +1,31 @@
-name: Build Android App
+name: Debug Project Structure
 
 on:
   push:
     branches: [main]
 
 jobs:
-  build:
+  debug:
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v4
     
-    - name: Make gradlew executable
+    - name: Check actual project structure
       run: |
-        chmod +x gradlew
-        echo "✓ Made gradlew executable"
-        
-    - name: Create gradle.properties with AndroidX
-      run: |
-        cat > gradle.properties << 'EOF'
-        android.useAndroidX=true
-        android.enableJetifier=true
-        org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
-        EOF
-        echo "✓ Created gradle.properties"
-        
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        
-    - name: Check available Gradle tasks
-      run: |
-        ./gradlew tasks --all || echo "Tasks command completed"
-        
-    - name: Build step by step
-      run: |
-       ./gradlew clean
-       ./gradlew assembleDebug
-        
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: BPDB-App
-        path: "app/build/outputs/apk/**/*.apk"
-        if-no-files-found: warn
+        echo "=== Complete Project Analysis ==="
+        echo ""
+        echo "1. Root directory files:"
+        ls -la
+        echo ""
+        echo "2. App directory files:"
+        ls -la app/
+        echo ""
+        echo "3. Gradle files content:"
+        echo "=== build.gradle ==="
+        cat build.gradle || echo "No build.gradle"
+        echo ""
+        echo "=== app/build.gradle ==="
+        cat app/build.gradle || echo "No app/build.gradle"
+        echo ""
+        echo "4. Check if this is even an Android project:"
+        find . -name "AndroidManifest.xml" -o -name "*.java" -o -name "*.kt" | head -20

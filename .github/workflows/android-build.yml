@@ -35,9 +35,10 @@ jobs:
       run: |
         ./gradlew tasks --all || echo "Tasks command completed"
         
-    - name: Build Android APK
+    - name: Build step by step
       run: |
-        ./gradlew clean assembleDebug
+       ./gradlew clean
+       ./gradlew assembleDebug
         
     - name: Upload APK
       uses: actions/upload-artifact@v4

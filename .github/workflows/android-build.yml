@@ -31,6 +31,10 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         
+    - name: Check available Gradle tasks
+      run: |
+        ./gradlew tasks --all || echo "Tasks command completed"
+        
     - name: Build Android APK
       run: |
         ./gradlew clean assembleDebug
